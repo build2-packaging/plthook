@@ -1,15 +1,17 @@
 : 1
 name: libplthook
-version: 0.1.0-a.0.z
+version: 0.0.1-a.0.z
 language: c
-project: build2-plthook
-summary: plthook C library
-license: BSD-2-Clause ; BSD 2-Clause "Simplified" License.
+project: plthook
+summary: C library for hooking PLT and IAT entries
+license: BSD-2-Clause-Views ; BSD 2-Clause License with views clause.
 description-file: README.md
 package-description-file: PACKAGE-README.md
-url: https://example.org/upstream
-email: upstream@example.org
-package-url: https://github.com/build2-packaging/build2-plthook
+url: https://github.com/kubo/plthook
+src-url: https://github.com/kubo/plthook
+email: kubo@jiubao.org
+package-url: https://github.com/build2-packaging/plthook
 package-email: packaging@build2.org ; Mailing list.
+topics: hooking, plt, elf, pe, macho
 depends: * build2 >= 0.18.0
 depends: * bpkg >= 0.18.0
