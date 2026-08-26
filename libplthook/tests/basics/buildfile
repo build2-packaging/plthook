@@ -1,0 +1,3 @@
+import libs = libplthook%lib{plthook}
+
+exe{driver}: {h c}{**} $libs testscript{**}

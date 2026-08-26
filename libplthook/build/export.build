@@ -1,0 +1,6 @@
+$out_root/
+{
+  include libplthook/
+}
+
+export $out_root/libplthook/$import.target
