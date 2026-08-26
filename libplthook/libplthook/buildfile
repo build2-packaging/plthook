@@ -2,7 +2,19 @@ intf_libs = # Interface dependencies.
 impl_libs = # Implementation dependencies.
 #import xxxx_libs += libhello%lib{hello}
 
-lib{plthook}: libul{plthook}: {h c}{**} $impl_libs $intf_libs
+windows = ($c.target.class == 'windows')
+apple   = ($c.target.class == 'macos' || $c.target.class == 'ios')
+bsd     = ($c.target.class == 'bsd')
+
+# Public header plus one platform TU (ELF, Mach-O, or PE). Keep all three in
+# the graph and select with include=.
+#
+lib{plthook}: libul{plthook}: {h c}{** -plthook_elf -plthook_osx -plthook_win32} \
+                              $impl_libs $intf_libs
+
+libul{plthook}: c{plthook_elf}:   include = (!$windows && !$apple)
+libul{plthook}: c{plthook_osx}:   include = $apple
+libul{plthook}: c{plthook_win32}: include = $windows
 
 libs{plthook}: def{plthook}: include = ($c.target.system == 'win32-msvc')
 def{plthook}: libul{plthook}
@@ -23,6 +35,39 @@ lib{plthook}:
 {
   c.export.poptions = "-I$out_pfx" "-I$src_pfx"
   c.export.libs = $intf_libs
+}
+
+# libdl on ELF, libutil on BSD (kinfo_getvmmap), DbgHelp on Windows. Apple
+# libSystem already provides dl. Static consumers need these too.
+#
+if $windows
+{
+  if ($c.target.system == 'mingw32')
+    sys_libs = -ldbghelp
+  else
+    sys_libs = dbghelp.lib
+
+  lib{plthook}:
+  {
+    c.libs += $sys_libs
+    c.export.libs += $sys_libs
+  }
+}
+elif $bsd
+{
+  lib{plthook}:
+  {
+    c.libs += -lutil
+    c.export.libs += -lutil
+  }
+}
+elif (!$apple)
+{
+  lib{plthook}:
+  {
+    c.libs += -ldl
+    c.export.libs += -ldl
+  }
 }
 
 # For pre-releases use the complete version to make sure they cannot
