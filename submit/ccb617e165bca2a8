@@ -1,0 +1,7 @@
+: 1
+name: libplthook
+version: 0.0.1
+language: c
+project: plthook
+summary: C library for hooking PLT and IAT entries
+license: BSD-2-Clause-Views; BSD 2-Clause License with views clause.
