@@ -29,6 +29,36 @@ c.poptions =+ "-I$out_pfx" "-I$src_pfx"
 if ($c.target.system == 'mingw32')
   c.loptions += -Wl,--export-all-symbols
 
+# Silence upstream warnings that are benign for this codebase: compiler
+# false positives or deprecation noise from Windows/Mach-O binary parsing,
+# not actionable bugs. Only one of plthook_elf/osx/win32 is ever compiled
+# per platform (see include= above), so these are effectively scoped to
+# that single translation unit.
+#
+if $apple
+{
+  # sym_name is always set (via BIND_OPCODE_SET_SYMBOL_TRAILING_FLAGS_IMM)
+  # before any BIND_OPCODE_DO_BIND* opcode uses it; GCC's inliner loses
+  # that invariant at -O3.
+  #
+  if ($c.id == 'gcc')
+    c.coptions += -Wno-maybe-uninitialized
+}
+elif $windows
+{
+  if ($c.id == 'msvc')
+    # C4267: size_t narrowing that never exceeds bounds in practice (import
+    # counts, a 512-byte error buffer). C4996: stricmp/sprintf flagged as
+    # unsafe/POSIX; usage is bounded and portability requires stricmp.
+    #
+    c.coptions += /wd4267 /wd4996
+  elif ($c.id == 'clang')
+    # stricmp is POSIX and deprecated in favor of _stricmp; kept for
+    # portability with the non-Windows code paths.
+    #
+    c.coptions += -Wno-deprecated-declarations
+}
+
 # Export options.
 #
 lib{plthook}:
